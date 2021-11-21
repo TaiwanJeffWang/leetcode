@@ -943,6 +943,83 @@ class Solution:
 
         return times
 
+    #record every later nodes
+    def bfs(self,root: TreeNode):
+        if root is None:
+            return 0
+        
+        max_depth = 1
+        res = {}
+        queue = deque()
+        queue.append((1,root))
+                
+        while queue:
+            layer , item = queue.popleft()
+            
+            if res.get(layer):
+                value = res[layer]
+                value.append(item.val)
+                res[layer] = value.append(item.val)
+            else:
+                res[layer] = [item.val]
+            
+            if item.left:
+                queue.append((layer+1,item.left))
+          
+            if item.right:
+                queue.append((layer+1,item.right)) 
+
+            max_depth = max(max_depth,layer)      
+        
+        return max_depth
+
+    #1302. Deepest Leaves Sum
+    def deepestLeavesSum(self, root: Optional[TreeNode]) -> int:
+        dic = {}
+        layer = 1
+        self.getDeepestLeavesSum(root, dic ,layer)
+        return dic[self.max_layer]
+    
+    max_layer = 1
+    def getDeepestLeavesSum(self, root: Optional[TreeNode], dic: dict, layer) -> int:
+        if root is None:
+            return 
+        
+        if dic.get(layer):
+            value = dic[layer]
+            value += root.val
+            dic[layer] = value
+        else:
+            dic[layer] = [root.val]
+
+        self.getDeepestLeavesSum(root.left, dic, layer+1)
+        self.getDeepestLeavesSum(root.right, dic, layer+1)
+
+        if layer > self.max_layer:
+           self.max_layer = layer
+        
+    #1769. Minimum Number of Operations to Move All Balls to Each Box
+    def minOperations(self, boxes: str) -> List[int]:
+        n = len(boxes)
+        from_end = [0] * n
+        from_end[-1] = int(boxes[-1])
+        from_start =[int(boxes[0])]
+        result = [0] * n
+        
+        for i in range(1,n):
+            from_start.append(from_start[i-1]+int(boxes[i]))
+            
+        for i in range(n-2,-1,-1):
+            from_end[i] = from_end[i+1]+int(boxes[i])
+
+        for i in range(n):
+            result[i] = sum(from_start[:i]) + sum(from_end[i+1:])
+
+        return result
+            
+
+
+
 
 tree1 = TreeNode(1, left=TreeNode(3, left=TreeNode(5)), right=TreeNode(2, left=TreeNode(7, left=TreeNode(8)), right=TreeNode(9)))
 tree2 = TreeNode(2, left=TreeNode(1, right=TreeNode(4)), right=TreeNode(3, right=TreeNode(7)))
@@ -959,7 +1036,7 @@ tree4.right=sub2
 tree5 = TreeNode(val=1,left=TreeNode(val=-2,right=TreeNode(3),left=TreeNode(val=1,left=TreeNode(-1))),right=TreeNode(val=-3,left=TreeNode(val=-2)))
 
 listNode = ListNode(3)
-a = ListNode(2)
+a = ListNode(2) 
 b = ListNode(0)
 c = ListNode(-4)
 
@@ -971,7 +1048,7 @@ c.next =a
 grid=[[1,3,1],[1,5,1],[4,2,1]]
 orangesRottings = [[2,1,1],[1,1,0],[0,1,1]]
 a = Solution()
-w = a.orangesRotting(orangesRottings)
+w = a.minOperations("001011")
 print(w)
 
 
