@@ -1004,6 +1004,8 @@ class Solution:
         from_end = [0] * n
         from_end[-1] = int(boxes[-1])
         from_start =[int(boxes[0])]
+        from_start_2 =[int(boxes[0])]
+
         result = [0] * n
         
         for i in range(1,n):
@@ -1016,7 +1018,28 @@ class Solution:
             result[i] = sum(from_start[:i]) + sum(from_end[i+1:])
 
         return result
-            
+    
+    #654. Maximum Binary Tree            
+    def constructMaximumBinaryTree(self, nums: List[int]) -> Optional[TreeNode]:
+        max = -float('inf')
+        i = -float('inf')
+        for j in range(len(nums)):
+            if nums[j] > max:
+                max = nums[j]
+                i = j
+
+        l = nums[:i]
+        r = nums[i+1:]
+
+        tree = TreeNode(val=m)
+        if l: 
+            tree.left = self.constructMaximumBinaryTree(l)
+        if r:
+            tree.right = self.constructMaximumBinaryTree(r)
+
+        return tree
+
+
 
 
 
@@ -1048,7 +1071,7 @@ c.next =a
 grid=[[1,3,1],[1,5,1],[4,2,1]]
 orangesRottings = [[2,1,1],[1,1,0],[0,1,1]]
 a = Solution()
-w = a.minOperations("001011")
+w = a.constructMaximumBinaryTree([3,2,1,6,0,5])
 print(w)
 
 
