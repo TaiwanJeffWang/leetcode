@@ -2,6 +2,7 @@ from os import close
 from typing import Dict, List, Optional
 import math
 from collections import deque
+import heapq
 
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
@@ -903,145 +904,353 @@ class Solution:
         mp[prefix] = mp[prefix] -1
         prefix -= root.val
 
-    #994. Rotting Oranges
-    def orangesRotting(self, grid: List[List[int]]) -> int:
-        #find 2 and 1 first
-        m = len(grid)
-        n = len(grid[0])
-        rottens = deque()
-        freshs = []
-        for i in range(n):
-            for j in range(m):
-                if grid[i][j] == 2:
-                    rottens.appendleft([i,j])
-                if grid[i][j] == 1:
-                    freshs.append([i,j])
+    #2. Add Two Numbers
+    def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+        queue_1, queue_2 = deque(), deque()
+        curr_1, curr_2 = l1, l2
 
-        dirs = [(0,1),(1,0),(0,-1),(-1,0)]
-        times = 0
-        q = deque()
-        while freshs:
-            rotten = rottens.popleft()
-            for di in dirs:
-                x = rotten[0]+di[0]
-                y = rotten[1]+di[1]
+        while curr_1:
+            queue_1.append(curr_1)
+            curr_1 = curr_1.next
+        while curr_2:
+            queue_2.append(curr_2)
+            curr_2 = curr_2.next
 
-                if x >= 0 and y >= 0:
-                    temp = [x,y]
-                if x >= 0 and y < 0:
-                    temp = [x,rotten[1]]
-                if x < 0 and y >= 0:
-                    temp = [rotten[0],y]
+        result = ListNode(-1)
+        curr = result
+        while queue_1 or queue_2:
+            total = 0
+            if queue_1 and queue_2:
+                item_1 = queue_1.popleft()
+                item_2 = queue_2.popleft()
+                total = item_1.val + item_2.val
+            elif queue_1:
+                item_1 = queue_1.popleft()
+                total = item_1.val
+            elif queue_2:
+                item_2 = queue_2.popleft()
+                total = item_2.val
 
-                if temp in freshs:
-                    freshs.remove(temp)
-                    q.append(temp)
-
-            if not rottens:
-                times+=1
-                rottens = deque(q)
-
-        return times
-
-    #record every later nodes
-    def bfs(self,root: TreeNode):
-        if root is None:
-            return 0
-        
-        max_depth = 1
-        res = {}
-        queue = deque()
-        queue.append((1,root))
-                
-        while queue:
-            layer , item = queue.popleft()
-            
-            if res.get(layer):
-                value = res[layer]
-                value.append(item.val)
-                res[layer] = value.append(item.val)
+            if total >= 10:
+                r = total % 10
+                n = total / 10
+                temp = ListNode(r)
+                if queue_1:
+                    last = queue_1[0]
+                    last.val += int(n)
+                    queue_1[0] = last
+                else:
+                    queue_1.append(TreeNode(int(n)))
             else:
-                res[layer] = [item.val]
-            
-            if item.left:
-                queue.append((layer+1,item.left))
-          
-            if item.right:
-                queue.append((layer+1,item.right)) 
+                temp = ListNode(total)
 
-            max_depth = max(max_depth,layer)      
-        
-        return max_depth
+            curr.next = temp
+            curr = curr.next
+        return result.next
 
-    #1302. Deepest Leaves Sum
-    def deepestLeavesSum(self, root: Optional[TreeNode]) -> int:
-        dic = {}
-        layer = 1
-        self.getDeepestLeavesSum(root, dic ,layer)
-        return dic[self.max_layer]
-    
-    max_layer = 1
-    def getDeepestLeavesSum(self, root: Optional[TreeNode], dic: dict, layer) -> int:
-        if root is None:
-            return 
-        
-        if dic.get(layer):
-            value = dic[layer]
-            value += root.val
-            dic[layer] = value
-        else:
-            dic[layer] = [root.val]
+    #14. Longest Common Prefix
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        x = zip(*strs)
+        ref = strs[0]
+        result = ""
 
-        self.getDeepestLeavesSum(root.left, dic, layer+1)
-        self.getDeepestLeavesSum(root.right, dic, layer+1)
-
-        if layer > self.max_layer:
-           self.max_layer = layer
-        
-    #1769. Minimum Number of Operations to Move All Balls to Each Box
-    def minOperations(self, boxes: str) -> List[int]:
-        n = len(boxes)
-        from_end = [0] * n
-        from_end[-1] = int(boxes[-1])
-        from_start =[int(boxes[0])]
-        from_start_2 =[int(boxes[0])]
-
-        result = [0] * n
-        
-        for i in range(1,n):
-            from_start.append(from_start[i-1]+int(boxes[i]))
-            
-        for i in range(n-2,-1,-1):
-            from_end[i] = from_end[i+1]+int(boxes[i])
-
-        for i in range(n):
-            result[i] = sum(from_start[:i]) + sum(from_end[i+1:])
+        for i in range(0,len(ref)):
+            for j in range(1,len(strs)):
+                if len(strs[j])-1 < i or strs[j][i] != ref[i]:
+                    return result
+            result += ref[i]
 
         return result
-    
-    #654. Maximum Binary Tree            
-    def constructMaximumBinaryTree(self, nums: List[int]) -> Optional[TreeNode]:
-        max = -float('inf')
-        i = -float('inf')
-        for j in range(len(nums)):
-            if nums[j] > max:
-                max = nums[j]
-                i = j
 
-        l = nums[:i]
-        r = nums[i+1:]
+    #19. Remove Nth Node From End of List
+    def removeNthFromEnd_1(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        queue = deque()
+        temp = head
+        count = 0
+        while temp:
+            queue.append(temp)
+            temp = temp.next
+            count += 1
+        curr = 0
+        k = ListNode(-1)
+        running = k
 
-        tree = TreeNode(val=m)
-        if l: 
-            tree.left = self.constructMaximumBinaryTree(l)
-        if r:
-            tree.right = self.constructMaximumBinaryTree(r)
+        while queue:
+            item = queue.popleft()
+            if curr + n == count:
+                pass
+            else:
+                running.next = item
+                running.next.next = None
+                running = running.next
+            curr+=1
+        return k.next
 
-        return tree
+    #3. Longest Substring Without Repeating Characters
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        count = 0
+        max_count = 0
+        temp = []
+        i = 0
+        dic = {}
+        #bbtablud
+        while i < len(s):
+            if s[i]  in temp:
+                temp.append(s[i])
+                start_index = dic[s[i]]
+                dic[s[i]] = i
+                count = i - start_index
+            else:
+                temp.append(s[i])
+                dic[s[i]]=i
+                count+=1
+
+            i+=1
+            if count > max_count:
+                max_count = count
+
+        return max_count
+
+    #4. Median of Two Sorted Arrays
+    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+        m = len(nums1)
+        n = len(nums2)
+        result = []
+        mid = m+n
+        x = mid // 2
+        i , j = 0 , 0
+        while i < m and j < n:
+            if nums1[i] >= nums2[j]:
+                result.append(nums2[j])
+                j+=1
+            elif nums1[i] < nums2[j]:
+                result.append(nums1[i])
+                i+=1
+
+            if len(result) >= x+1:
+                if mid % 2 == 0:
+                    return (result[-1] + result[-2])/2
+                else:
+                    return result[-1]
+
+        if i == m:
+            for item in range(j,n):
+                result.append(nums2[item])
+                if len(result) >= x+1:
+                    if mid % 2 == 0:
+                        return (result[-1] + result[-2])/2
+                    else:
+                        return result[-1]
+        if j == n:
+            for item in range(i,m):
+                result.append(nums1[item])
+                if len(result) >= x+1:
+                    if mid % 2 == 0:
+                        return (result[-1] + result[-2])/2
+                    else:
+                        return result[-1]
 
 
+    count = 0
+    def goodNodes(self, root: TreeNode) -> int:
+
+        self.dfs(root,root.val)
+        return self.count
+
+    def dfs(self, root: TreeNode, max_number: int):
+        if root is None:
+            return
+
+        if root.val >= max_number:
+            max_number = root.val
+            self.count +=1
+
+        self.dfs(root.left,max_number)
+        self.dfs(root.right,max_number)
+
+    def arraySign(self, nums: List[int]) -> int:
+        result = nums[0]
+        for i in range(1,len(nums)):
+            result = result * nums[i]
+            if result == 0:
+                break
+
+        if result < 0:
+            return -1
+        if result > 0:
+            return 1
+
+    #9. Palindrome Number
+    def isPalindrome(self, x: int) -> bool:
+        s = str(x)
+        leng = len(s)
+        i = 0
+        j = leng - 1
+
+        while i <= j:
+            if s[i] == s[j]:
+                i += 1
+                j -= 1
+            else:
+                return False
+
+        return True
 
 
+    #23. Merge k Sorted Lists
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        # bad method , 更糟糕的暴力解法 因為重複比較元素 不如先把 每一個元素拆開 sort 在連接再一起
+        # k = 0
+        # result = ListNode(-1)
+        # curr = result
+        # while lists:
+        #     for i in range(len(lists)):
+        #         item = lists[i]
+        #         if item and lists[k] and item.val < lists[k].val:
+        #             k = i
+
+        #     if lists[k]:
+        #         curr.next = ListNode(lists[k].val)
+        #         curr = curr.next
+        #         lists[k] = lists[k].next
+        #     if  not lists[k]:
+        #         del lists[k]
+
+        #     k = 0
+
+        # return result.next
+        result = ListNode(-1)
+        curr = result
+        heap = []
+        for i in range(len(lists)):
+            if lists[i]:
+                heap.append([lists[i].val,i])
+
+        heapq.heapify(heap)
+
+
+        while heap:
+            item = heapq.heappop(heap)
+            val = item[0]
+            index = item[1]
+            curr.next = ListNode(val)
+            curr = curr.next
+            lists[index] = lists[index].next
+            if lists[index]:
+                heap.append([lists[index].val, index])
+            heapq.heappush(heap)
+
+        return result.next
+
+    def maxProduct(self, nums: List[int]) -> int:
+        heap = []
+        for i in range(len(nums)):
+            heap.append([nums[i], i])
+
+        heapq._heapify_max(heap)
+
+        f = heapq._heappop_max(heap)
+        s = heapq._heappop_max(heap)
+
+        result = (nums[f[1]]-1) * (nums[s[1]]-1)
+
+        return result
+
+    #253. Meeting Rooms II [[9,10],[4,9],[4,17]] => [4,9],[4,17],[9,10]
+    def minMeetingRooms(self, intervals: List[List[int]]) -> int:
+        heap = []
+        count = 0
+        for i in intervals:
+            if i:
+                heap.append(i)
+
+        heapq.heapify(heap)
+        # i =heapq.heappop(heap)
+        end_times = []
+
+        while heap:
+            meeting = heapq.heappop(heap)
+            start_time = meeting[0]
+            end_time = meeting[1]
+            end_times.append(end_time)
+
+            end_times.sort()
+
+            if start_time < end_times[0]:
+                count += 1
+            else:
+                del end_times[0]
+
+
+        return count
+
+    #1338. Reduce Array Size to The Half
+    def minSetSize(self, arr: List[int]) -> int:
+        dic = {}
+        leng = len(arr)
+        for ar in arr:
+            if dic.get(ar):
+                dic[ar] = dic[ar] + 1
+            else:
+                dic[ar] = 1
+
+            if dic[ar] >= leng/2:
+                return ar
+
+        sort = sorted(dic.items(), key= lambda x: x[1],reverse= True)
+        result = []
+        count = 0
+        values = 0
+        for item in sort:
+            temp = item[1]
+            # if temp > leng/2:
+            #     return temp
+            # else:
+            result.append(item[0])
+            count += temp
+            values +=1
+            if count >= leng/2:
+                return values
+
+        return values
+
+    #451. Sort Characters By Frequency
+    def frequencySort(self, s: str) -> str:
+        dic = {}
+        result = ""
+
+        for l in s:
+            if dic.get(l):
+                dic[l] = dic[l] + 1
+            else:
+                dic[l] = 1
+
+        sort = sorted(dic.items(), key= lambda x:x[1], reverse=True)
+
+        for item in sort:
+            result += item[0] * item[1]
+
+        return result
+
+    #56. Merge Intervals
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        result = []
+        intervals.sort()
+        temp = []
+        for item in intervals:
+            if temp:
+                if temp[1] >= item[0]:
+                    if temp[1] < item[1]:
+                        temp[1] = item[1]
+                else:
+                    result.append(list(temp))
+                    temp = [item[0], item[1]]
+            else:
+                temp = [item[0], item[1]]
+
+        result.append(temp)
+
+        return result
 
 
 tree1 = TreeNode(1, left=TreeNode(3, left=TreeNode(5)), right=TreeNode(2, left=TreeNode(7, left=TreeNode(8)), right=TreeNode(9)))
@@ -1055,11 +1264,10 @@ sub2 = TreeNode(val=8,left=TreeNode(val=13),right=TreeNode(val=4,left=TreeNode(v
 tree4.left=sub1
 tree4.right=sub2
 
-
 tree5 = TreeNode(val=1,left=TreeNode(val=-2,right=TreeNode(3),left=TreeNode(val=1,left=TreeNode(-1))),right=TreeNode(val=-3,left=TreeNode(val=-2)))
 
 listNode = ListNode(3)
-a = ListNode(2) 
+a = ListNode(2)
 b = ListNode(0)
 c = ListNode(-4)
 
@@ -1068,34 +1276,40 @@ a.next = b
 b.next = c
 c.next =a
 
+# l1 = ListNode(9)
+# l1.next = ListNode(9)
+# l1.next.next = ListNode(9)
+# l1.next.next.next = ListNode(9)
+# l1.next.next.next.next = ListNode(9)
+# l1.next.next.next.next.next = ListNode(9)
+# l1.next.next.next.next.next.next = ListNode(9)
+
+
+l2 = ListNode(1)
+l2.next = ListNode(2)
+# l2.next.next = ListNode(3)
+# l2.next.next.next = ListNode(4)
+# l2.next.next.next.next = ListNode(5)
+
+goodNodes = TreeNode(val=3, left= TreeNode(val=1, left= TreeNode(3)), right= TreeNode(4, left= TreeNode(9), right= TreeNode(5)))
+
 grid=[[1,3,1],[1,5,1],[4,2,1]]
 orangesRottings = [[2,1,1],[1,1,0],[0,1,1]]
+
+l1 = ListNode(1)
+l1.next = ListNode(2)
+l1.next.next = ListNode(2)
+
+l2 = ListNode(1)
+l2.next = ListNode(3)
+l2.next.next = ListNode(5)
+
+
+l3 = ListNode(2)
+l3.next = ListNode(3)
+l3.next.next = ListNode(4)
+
 a = Solution()
-w = a.constructMaximumBinaryTree([3,2,1,6,0,5])
+w = a.merge([[1,4],[4,5]])
 print(w)
 
-
-# combination => 列出所有順序, ex. 123 == 132 c m取Ｎ or first == "[" or first == "{"
-# 所以要設定start index , 不可以從0開始
-# def dfs(self  , nums , start_index , temp: list):
-#     if len(temp) = len(nums):
-#         return
-
-#     for i in range(start_index,len(nums)): ### key word!!!!! the start index!!!!
-#         temp.append(nums[i])
-#         self.dfs(nums,nums,i+1,temp) ### !!!!!!key word here , i+1
-#         temp.pop() ### !!!!!! key here remove the last element
-
-
-
-# permutation => 列出所有組合方式, ex. 123 != 132  p m取Ｎ
-# def dfs(self  , nums , start_index , temp: list):
-#     if len(temp) = len(nums):
-#         return
-
-#     for i in range(len(nums)): ### key word!!!!! the start index!!!!
-#         if nums(i) in temp:
-#           continue            ### keyword!!!!! 因為要把每個元素跑一輪 所以要從頭跑 但是已經在裡面的元素則略過
-#         temp.append(nums[i])
-#         self.dfs(nums,nums,temp) 
-#         temp.pop() ### !!!!!! key here remove the last element
