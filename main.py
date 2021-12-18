@@ -1,8 +1,10 @@
-from os import close
+from os import close, sendfile
 from typing import Dict, List, Optional
 import math
 from collections import deque
 import heapq
+
+from algorithms.insert_sort import insert_sort
 
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
@@ -1252,6 +1254,139 @@ class Solution:
 
         return result
 
+    #24. Swap Nodes in Pairs
+    def swapPairs(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        curr = head
+        result = ListNode(-1)
+        running = result
+        if not curr or not curr.next:
+            return head
+        while curr:
+            first = curr
+            second = curr.next
+            if second:
+                temp = second.next
+                second.next = first
+                second.next.next = None
+
+                curr = temp
+
+                running.next = second
+            else:
+                curr = second
+                running.next = first
+
+            running = running.next.next
+
+        return result.next
+
+
+    def minRemoveToMakeValid(self, s: str) -> str:
+        stack, cur = [], ''
+        for c in s:
+            if c == '(':
+                stack += [cur]
+                cur = ''
+            elif c == ')':
+                if stack:
+                    cur = stack.pop() + '(' + cur + ')'
+            else:
+                cur += c
+
+        while stack:
+            cur = stack.pop() + cur
+
+        return cur
+
+    def kClosest(self, points: List[List[int]], k: int) -> List[List[int]]:
+        result = []
+        leng = len(points)
+        for i in range(leng):
+            x = points[i][0]
+            y = points[i][1]
+            dis = x**2 + y**2
+            result.append( (dis, i))
+
+        result.sort()
+        a = []
+        for i in range(k):
+            a.append( points[result[i][1]])
+
+        return a
+
+    find = False
+    def exist(self, board: List[List[str]], word: str) -> bool:
+        n = len(board)
+        m = len(board[0])
+        l = ""
+        result = []
+        self.find_word(board, word, 0, 0, n, m, 0, l, result)
+        return self.find
+
+    def find_word(self, board: List[List[str]], word: str, i: int, j: int, n: int, m: int , k, l, result):
+        if l == word:
+            self.find = True
+            return
+
+        if self.find:
+            return
+
+        if i < n and i >= 0 and j < m and j >= 0:
+            if board[i][j] == word[k] and [i, j] not in result:
+                result.append([i, j])
+                l += word[k]
+                self.find_word(board, word, i-1, j, n, m, k+1, l, result)
+                self.find_word(board, word, i+1, j, n, m, k+1, l, result)
+                self.find_word(board, word, i, j-1, n, m, k+1, l, result)
+                self.find_word(board, word, i, j+1, n, m, k+1, l, result)
+            else:
+                self.find_word(board, word, i+1, j, n, m, k, l, result)
+                self.find_word(board, word, i, j+1, n, m, k, l, result)
+
+
+        return
+
+    def test(self, nums: List[int], k):
+
+        result = {}
+        for i in range(len(nums)):
+            if nums[i] > k:
+                result[i] = nums[i]
+
+        return result
+
+    def insertIntoBST(self, root: Optional[TreeNode], val: int) -> Optional[TreeNode]:
+        if root is None:
+            return
+
+        if root.val < val:
+            if root.right is None:
+                root.right = TreeNode(val)
+            else:
+                self.insert_sort(root.right, val)
+        else:
+            if root.left is None:
+                root.left = TreeNode(val)
+            else:
+                self.insertIntoBST(root.left, val)
+
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        stack = []
+        trav = root
+        prev = -float('inf')
+        while trav or stack:
+            if trav:
+                stack.append(trav)
+                trav = trav.left
+            else:
+                u = stack.pop()
+                if u:
+                    if u.val <= prev:
+                        return False
+                    prev = u.val
+                trav = u.right
+        return True
+
 
 tree1 = TreeNode(1, left=TreeNode(3, left=TreeNode(5)), right=TreeNode(2, left=TreeNode(7, left=TreeNode(8)), right=TreeNode(9)))
 tree2 = TreeNode(2, left=TreeNode(1, right=TreeNode(4)), right=TreeNode(3, right=TreeNode(7)))
@@ -1298,7 +1433,9 @@ orangesRottings = [[2,1,1],[1,1,0],[0,1,1]]
 
 l1 = ListNode(1)
 l1.next = ListNode(2)
-l1.next.next = ListNode(2)
+l1.next.next = ListNode(3)
+#l1.next.next.next = ListNode(4)
+
 
 l2 = ListNode(1)
 l2.next = ListNode(3)
@@ -1309,7 +1446,16 @@ l3 = ListNode(2)
 l3.next = ListNode(3)
 l3.next.next = ListNode(4)
 
+
+
+
+
+tn = TreeNode(val=5,left=TreeNode(4),right=TreeNode(6,left=TreeNode(3),right=TreeNode(7)))
+
+
+
+
 a = Solution()
-w = a.merge([[1,4],[4,5]])
+w = a.isValidBST(tn)
 print(w)
 
