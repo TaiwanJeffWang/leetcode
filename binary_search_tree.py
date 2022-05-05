@@ -54,18 +54,43 @@ class Solution:
 
         return result
 
-    # def create_bst(self, nums: List[int], k: int, root: TreeNode):
-    #     root.val = nums[k]
+    def delete_binary_tree(self, root: TreeNode, k: int)->TreeNode:
+        #如果沒有左子樹也沒有右子樹的話 直接移除
+        #如果只有左子樹 或是 只有右子樹的話 移除後直接接上去
+        #如果有左子樹跟右子樹， 找離該移除點最近的值填上(左子樹中最大直 或是右子樹中最小值)
 
-    #     if k+1 < len(nums):
-    #         if nums[k+1] > root.val:
-    #             root.right = TreeNode()
-    #             self.create_bst(nums, k+1, root.right)
-    #         else:
-    #             root.left = TreeNode()
-    #             self.create_bst(nums, k+1, root.left)
+        if root.val == k:
+            if root.left is None and root.right is None:
+                root = None
+            elif root.left and root.right is None:
+                root = root.left
+            elif root.left is None and root.right:
+                root = root.right
+            else:
+                #有左子樹也有右子樹：
+                max_node = self.findＭax(root.left)
+                root.val = max_node.val
+                root.left = self.delete_binary_tree(root.left, max_node.val)
+
+        else:
+            if root.val < k:
+                root.right = self.delete_binary_tree(root.right, k)
+            else:
+                root.left = self.delete_binary_tree(root.left, k)
+
+        return root
+
+    def findＭax(self, root: TreeNode) -> TreeNode:
+        while root.right:
+            root = root.right
+
+        return root
+
 
 
 a = Solution()
 x = a.create_binary_tree([62, 88, 58, 47, 35, 73, 51, 99, 37, 93])
+c = a.isValidBST(x)
+b = a.delete_binary_tree(x, 93)
+c = a.isValidBST(b)
 print(x)

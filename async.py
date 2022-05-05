@@ -37,7 +37,7 @@ class NestTest():
         for _ in range(1):
             await self.coro(s)
         return f"result:{s}"
-
+ 
 async def wicker():
     t1 = asyncio.create_task(say("123", 2))
     t2 = asyncio.create_task(say("546", 0))
